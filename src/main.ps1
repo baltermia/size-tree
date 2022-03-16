@@ -1,3 +1,5 @@
+. "Directory.ps1"
+
 <# 
     .SYNOPSIS  
     Displays the Size of directories in a Tree-/GridView. Files are not shown, only their size is being taken into consideration.
@@ -31,11 +33,13 @@ Function Show-SizeTree {
     )
 
     Function DisplayDirectory([String]$Directory) {
-        "TODO: Displays directory hirarchy and size of '$Directory'." | Write-Host
+        $dir = [Directory]::New($Directory, $true)
+
+        $dir.Display()
     }
     
     Function DisplayAllDirectories {
-        "TODO: Displays directory hirarchy and size of the biggest directories." | Write-Host
+        $dir = [Directory]::New("C:\")
     }
 
     if ($PSBoundParameters.ContainsKey((Get-Variable Directory | Select-Object -ExpandProperty Name))) {
