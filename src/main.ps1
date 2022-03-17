@@ -1,5 +1,5 @@
 # Import Directory class
-using module ".\Directory.psm1"
+using module ".\Directory.ps1"
 
 <# 
     .SYNOPSIS  
@@ -35,14 +35,17 @@ Function Show-SizeTree {
     Clear-Host
     Write-Host "Getting Directories... This might take a moment."
 
-    if ($PSBoundParameters.ContainsKey((Get-Variable Directory | Select-Object -ExpandProperty Name))) {
-        $dir = [Directory]::New($Directory, $true)
+    $isDirSet = $PSBoundParameters.ContainsKey((Get-Variable Directory | Select-Object -ExpandProperty Name))
 
-        "Path: '" + $dir.Path + "', Size: '" + $dir.Size+ "'" | Write-Host
-    }
-    else {
-        $dir = [Directory]::New("C:\", $false)
+    $path = $Directory
 
-        "Path: '" + $dir.Path + "', Size: '" + $dir.Size+ "'" | Write-Host
+    if (!$isDirSet) {
+        $path = "C:\"
     }
+    
+    $dir = [Directory]::New($path, $isDirSet)
+
+    "Path: '" + $dir.Path + "', Size: '" + $dir.Size+ "'" | Write-Host
+
+    
 }

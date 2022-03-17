@@ -1,10 +1,11 @@
 # Import Directory class
-using module ".\Directory.psm1"
-
-Add-Type -AssemblyName System.Windows.Forms
+using module ".\Directory.ps1"
 
 [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing") 
 [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
+
+Add-Type -AssemblyName System.Windows.Forms
+
 
 class DirectoryTreeView {
     hidden [System.Windows.Forms.Form]$Form
@@ -14,7 +15,9 @@ class DirectoryTreeView {
     }
 
     hidden [void] CreateForm() {
-        $newForm = New-Object -TypeName System.Windows.forms.Form
+        $newForm = [System.Windows.Forms.Form]::New
+        $treeView = [System.Windows.Forms.TreeView]::New
+
         $newForm.Text = "SizeTree for " + $this.dir
         $newForm.Width = 400
         $newForm.Height = 600
@@ -22,8 +25,9 @@ class DirectoryTreeView {
         $newForm.
         
 
-        $treeView = New-Object -TypeName System.Windows.forms.TreeView
 
+
+        $newForm.Controls.Add($treeView)
         $this.Form = $newForm
     }
 

@@ -1,5 +1,5 @@
 # Import Directory class
-using module ".\DirectoryTreeView.psm1"
+using module ".\DirectoryTreeView.ps1"
 
 class Directory {
 
@@ -40,6 +40,10 @@ class Directory {
         if (!(Test-Path -Path $path -PathType Container)) {
             throw "Directory does not exist"
         }
+    }
+
+    [string] GetSizeAsString() {
+        return "TODO"
     }
 
     <#. 
