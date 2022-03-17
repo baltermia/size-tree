@@ -22,12 +22,9 @@ class DirectoryTreeView {
         $newForm.Width = 400
         $newForm.Height = 600
         $newForm.AutoSize = $true
-        $newForm.
-        
-
-
 
         $newForm.Controls.Add($treeView)
+        
         $this.Form = $newForm
     }
 
