@@ -1,4 +1,5 @@
-. "Directory.ps1"
+# Import Directory class
+using module ".\Directory.psm1"
 
 <# 
     .SYNOPSIS  
@@ -24,7 +25,6 @@
     C:\PS> Show-SizeTree "C:\Program Files (x86)\"
     Display the TreeView for the Program Files directory.
 #> 
-
 Function Show-SizeTree {
     [CmdletBinding()]
     param ( 
@@ -32,20 +32,17 @@ Function Show-SizeTree {
         [String] $Directory
     )
 
-    Function DisplayDirectory([String]$Directory) {
-        $dir = [Directory]::New($Directory, $true)
-
-        $dir.Display()
-    }
-    
-    Function DisplayAllDirectories {
-        $dir = [Directory]::New("C:\")
-    }
+    Clear-Host
+    Write-Host "Getting Directories... This might take a moment."
 
     if ($PSBoundParameters.ContainsKey((Get-Variable Directory | Select-Object -ExpandProperty Name))) {
-        DisplayDirectory($Directory)
+        $dir = [Directory]::New($Directory, $true)
+
+        "Path: '" + $dir.Path + "', Size: '" + $dir.Size+ "'" | Write-Host
     }
     else {
-        DisplayAllDirectories
+        $dir = [Directory]::New("C:\", $false)
+
+        "Path: '" + $dir.Path + "', Size: '" + $dir.Size+ "'" | Write-Host
     }
 }
