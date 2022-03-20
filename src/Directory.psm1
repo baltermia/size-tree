@@ -1,6 +1,5 @@
 Add-Type -AssemblyName System.Windows.Forms
 
-
 class Directory {
     [String]$Path
     [String]$Name
@@ -31,11 +30,13 @@ class Directory {
    }
 
     [void] GetChildren() {
-        $this.Children = New-Object System.Collections.Generic.List[Directory]
+        $list = [System.Collections.Generic.List[Directory]]::New
 
         foreach ($subdir in Get-ChildItem -Path $this.Path -Directory -Force -ErrorAction SilentlyContinue | Select-Object FullName) {
-            $this.Children.Add([Directory]::New($subdir.Fullname, $true))
+            $list.Add([Directory]::New($subdir.Fullname, $true))
         }
+
+        $this.Children = $list
     }
 
     [Void] CheckIsFolder([string]$path) {
@@ -68,19 +69,38 @@ class Directory {
         return $result
     }
 
-    <#. 
-        .DESCRIPTION
-        Displays the Directory object
-    .#>
-    [void]Display([bool]$includeChildren = $true) {
-        $newForm = New-Object System.Windows.Forms.Form
-        $treeView = New-Object System.Windows.Forms.Control.TreeView
+    [object] GetTreeNode([bool]$firstNodeFullPath) {
+        $nodeText = $this.Path 
+
+        if (!$firstNodeFullPath) {
+            $nodeText = $nodeText.Substring($this.Path.LastIndexOf("\"))
+        }
+
+        $nodeText += " - " + $this.GetSize()
+
+        $node =  New-Object System.Windows.Forms.TreeNode
+        $node.Name = $nodeText
+        $node.Text = $nodeText
+
+        foreach ($dir in $this.Children) {
+            $node.Nodes.Add($dir.GetTreeNode($false))
+        }
+
+        return $node;
+    }
+
+    [void] Display([bool]$includeChildren = $true) {
+        $newForm =  New-Object System.Windows.Forms.Form
+        $treeView = New-Object System.Windows.Forms.TreeView 
 
         $newForm.Text = "SizeTree for " + $this.Path
-        $newForm.Width = 400
-        $newForm.Height = 600
+        $newForm.Width = 600
+        $newForm.Height = 800
         $newForm.AutoSize = $true
+
+        $treeView.Nodes.Add($this.GetTreeNode($true))
         
+        $newForm.Controls.Add($treeView)
         $newForm.ShowDialog()
     }
 }
