@@ -44,7 +44,7 @@ Function Show-SizeTree {
     
     $dir = [Directory]::New($path, $isDirSet)
 
-    "Path: '" + $dir.Path + "', Size: '" + $dir.Size+ "'" | Write-Host
+    "Path: '" + $dir.Path + "', Size: '" + $dir.GetSizeAsString() + "'" | Write-Host
 
-    
+    $dir.Display($true)
 }

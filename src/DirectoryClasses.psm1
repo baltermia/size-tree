@@ -1,38 +1,41 @@
+Add-Type -AssemblyName System.Windows.Forms
 
-# ----------------------------------------------- Directory Class -----------------------------------------------
 
 class Directory {
     [String]$Path
     [String]$Name
-    [Double]$Size
-    [System.Collections.Generic.IEnumerable[Directory]]$Children = $null; 
+    [System.Collections.Generic.IEnumerable[Directory]]$Children
 
     Directory([String]$path, [Bool]$getChildren = $true) {
         $this.CheckIsFolder($path)
 
         $this.Path = $path
-        
-        $this.Size = $this.GetFolderSize($path)
 
         if ($getChildren) {
-            $this.GetChildren
+            $this.GetChildren()
         }
     }
 
-    Directory([String]$path, [Double]$size, [System.Collections.Generic.IEnumerable[Directory]]$children) {
-        $this.Path = $path;
-        $this.Size = $size;
-        $this.Cildren = $children;
-    }
+    [double] GetSize() {
+        if (![Linq.Enumerable]::Any($this.Children)) {
+            return (Get-ChildItem $this.Path -Recurse | Measure-Object -Property Length -Sum).Sum
+        }
+
+        $sum = 0;
+
+        foreach ($dir in $this.Children) {
+            $sum += $dir.GetSize()
+        }
+
+        return $sum
+   }
 
     [void] GetChildren() {
+        $this.Children = New-Object System.Collections.Generic.List[Directory]
 
-    }
-
-    [double] GetFolderSize([string]$path) {
-        $this.CheckIsFolder($path)
-        Get-ChildItem $path -Recurse | Out-GridView
-        return (Get-ChildItem $path -Recurse | Measure-Object -Property Length -Sum).Sum
+        foreach ($subdir in Get-ChildItem -Path $this.Path -Directory -Force -ErrorAction SilentlyContinue | Select-Object FullName) {
+            $this.Children.Add([Directory]::New($subdir.Fullname, $true))
+        }
     }
 
     [Void] CheckIsFolder([string]$path) {
@@ -42,7 +45,27 @@ class Directory {
     }
 
     [string] GetSizeAsString() {
-        return "TODO"
+        $result = ""
+        $bytes = 1024
+        [String[]]$list = ("Bytes", "KB", "MB", "GB")
+
+        $tmpSize = $this.GetSize()
+
+        for ($i = $list.Length - 1; $i -ge 0; $i--) {
+            $pow = [Math]::Pow($bytes, $i)
+
+            if ($pow -gt $tmpSize) {
+                continue
+            }
+
+            $rest = $tmpSize % $pow
+
+            $result += (($tmpSize - $rest) / $pow).ToString() + " " + $list[$i] + " "
+
+            $tmpSize = $rest
+        }
+
+        return $result
     }
 
     <#. 
@@ -50,40 +73,13 @@ class Directory {
         Displays the Directory object
     .#>
     [void]Display([bool]$includeChildren = $true) {
-        $treeView = [DirectoryTreeView]::New($this)
+        $newForm = New-Object System.Windows.Forms.Form
 
-        $treeView.ShowDialog()
-    }
-}
-
-# ------------------------------------------- DirectoryTreeView Class -------------------------------------------
-
-Add-Type -AssemblyName System.Windows.Forms
-Add-Type -AssemblyName System.Drawing
-
-
-class DirectoryTreeView {
-    hidden [System.Windows.Forms.Form]$Form
-
-    DirectoryTreeView([Directory]$dir, [Bool]$showChildren = $true) {
-        CreateForm
-    }
-
-    hidden [void] CreateForm() {
-        $newForm = [System.Windows.Forms.Form]::New
-        $treeView = [System.Windows.Forms.TreeView]::New
-
-        $newForm.Text = "SizeTree for " + $this.dir
+        $newForm.Text = "SizeTree for " + $this.Directory
         $newForm.Width = 400
         $newForm.Height = 600
         $newForm.AutoSize = $true
-
-        $newForm.Controls.Add($treeView)
         
-        $this.Form = $newForm
-    }
-
-    [void] ShowDialog() {
-        $this.Form.ShowDialog
+        $newForm.ShowDialog()
     }
 }
