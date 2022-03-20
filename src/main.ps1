@@ -1,4 +1,4 @@
-using module .\DirectoryClasses.psm1
+using module .\Directory.psm1
 
 <# 
     .SYNOPSIS  

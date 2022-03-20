@@ -74,8 +74,9 @@ class Directory {
     .#>
     [void]Display([bool]$includeChildren = $true) {
         $newForm = New-Object System.Windows.Forms.Form
+        $treeView = New-Object System.Windows.Forms.Control.TreeView
 
-        $newForm.Text = "SizeTree for " + $this.Directory
+        $newForm.Text = "SizeTree for " + $this.Path
         $newForm.Width = 400
         $newForm.Height = 600
         $newForm.AutoSize = $true
