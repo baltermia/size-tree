@@ -1,5 +1,4 @@
-# Import Directory class
-using module ".\Directory.ps1"
+using module .\DirectoryClasses.psm1
 
 <# 
     .SYNOPSIS  
