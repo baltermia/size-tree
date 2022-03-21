@@ -1,7 +1,7 @@
 using module .\Directory.psm1
 
 param (
-[String] $Directory= “C:\"
+[String] $Directory = "C:\"
 )
 
 <# 
