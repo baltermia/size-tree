@@ -3,7 +3,7 @@ Add-Type -AssemblyName System.Windows.Forms
 class Directory {
     [String]$Path
     [String]$Name
-    [System.Collections.Generic.IEnumerable[Directory]]$Children
+    [System.Collections.Generic.List[Directory]]$Children
 
     Directory([String]$path, [Bool]$getChildren = $true) {
         $this.CheckIsFolder($path)
@@ -16,7 +16,7 @@ class Directory {
     }
 
     [double] GetSize() {
-        if (![Linq.Enumerable]::Any($this.Children)) {
+        if ($this.Children.Count -le 0) {
             return (Get-ChildItem $this.Path -Recurse | Measure-Object -Property Length -Sum).Sum
         }
 
@@ -30,11 +30,13 @@ class Directory {
    }
 
     [void] GetChildren() {
-        $list = [System.Collections.Generic.List[Directory]]::New
+        $childDirs = Get-ChildItem -Path $this.Path -Directory -Force -ErrorAction SilentlyContinue | Select-Object FullName
 
-        foreach ($subdir in Get-ChildItem -Path $this.Path -Directory -Force -ErrorAction SilentlyContinue | Select-Object FullName) {
-            $list.Add([Directory]::New($subdir.Fullname, $true))
+        if ($childDirs.Length -le 0) {
+            return
         }
+
+        $list = $childDirs | ForEach-Object { return [Directory]::New($_.FullName, $true) }
 
         $this.Children = $list
     }
@@ -76,7 +78,7 @@ class Directory {
             $nodeText = $nodeText.Substring($this.Path.LastIndexOf("\"))
         }
 
-        $nodeText += " - " + $this.GetSize()
+        $nodeText += " - " + $this.GetSizeAsString()
 
         $node =  New-Object System.Windows.Forms.TreeNode
         $node.Name = $nodeText
@@ -89,15 +91,23 @@ class Directory {
         return $node;
     }
 
-    [void] Display([bool]$includeChildren = $true) {
+    [void] Display() {
+        if ($this.Children.Count -le 0) {
+            "Path: '" + $this.Path + "', Size: '" + $this.GetSizeAsString() + "'" | Write-Host
+
+            return
+        }
+
         $newForm =  New-Object System.Windows.Forms.Form
         $treeView = New-Object System.Windows.Forms.TreeView 
 
         $newForm.Text = "SizeTree for " + $this.Path
-        $newForm.Width = 600
-        $newForm.Height = 800
+        $newForm.Width = 500
+        $newForm.Height = 500
         $newForm.AutoSize = $true
 
+        $treeView.Dock = "Fill"
+        $treeView.Font = [System.Drawing.Font]::New($treeView.Font.FontFamily, 14)
         $treeView.Nodes.Add($this.GetTreeNode($true))
         
         $newForm.Controls.Add($treeView)

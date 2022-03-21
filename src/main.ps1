@@ -1,5 +1,9 @@
 using module .\Directory.psm1
 
+param (
+[String] $Directory= “C:\"
+)
+
 <# 
     .SYNOPSIS  
     Displays the Size of directories in a Tree-/GridView. Files are not shown, only their size is being taken into consideration.
@@ -42,9 +46,7 @@ Function Show-SizeTree {
         $path = "C:\"
     }
     
-    $dir = [Directory]::New($path, $isDirSet)
-
-    "Path: '" + $dir.Path + "', Size: '" + $dir.GetSizeAsString() + "'" | Write-Host
-
-    $dir.Display($true)
+    [Directory]::New($path, $isDirSet).Display()
 }
+
+Show-SizeTree $Directory
